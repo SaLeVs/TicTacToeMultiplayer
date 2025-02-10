@@ -12,5 +12,6 @@ public class Notes : MonoBehaviour
     // Only server can be spawn objects
     // RPCS allows us to call methods on the server from the client, for spawn objects for example
     // remote procedure calls = RPCS
-
+    // A important thing about network, is that all data need to be syncronized between server and clients, and this is not automatically, so we need to do this manually
+    // We syncronize the pos of cross using the network transform component
 }

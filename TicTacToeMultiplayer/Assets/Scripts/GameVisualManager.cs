@@ -24,9 +24,8 @@ public class GameVisualManager : NetworkBehaviour
     private void SpawnObjectRpc(int x, int y) // we need to put the Rpc attribute to make this method can be called from client, and the name of function need to be Rpc
     {
         Debug.Log("SpawnObject");
-        Transform spawnedCrossTransform = Instantiate(crossPrefab);
+        Transform spawnedCrossTransform = Instantiate(crossPrefab, GetGridWorldPosition(x, y), Quaternion.identity);
         spawnedCrossTransform.GetComponent<NetworkObject>().Spawn(true);
-        spawnedCrossTransform.position = GetGridWorldPosition(x, y);
     }
 
     private Vector2 GetGridWorldPosition(int x, int y)
