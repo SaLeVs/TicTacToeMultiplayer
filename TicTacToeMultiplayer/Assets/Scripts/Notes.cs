@@ -10,4 +10,7 @@ public class Notes : MonoBehaviour
     // We can use the the simples OnMouseDown() method to handle click events, but we can implement the interface OnPointerDownHandler to handle click events too, but if we use the interface we need to implement the method OnPointerDown and put a event system on scene, and add raycaster on the camera
     // For make a object can be spawned on network, we have to add the Network Object script
     // Only server can be spawn objects
+    // RPCS allows us to call methods on the server from the client, for spawn objects for example
+    // remote procedure calls = RPCS
+
 }

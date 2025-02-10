@@ -2,7 +2,7 @@ using System;
 using Unity.Netcode;
 using UnityEngine;
 
-public class GameVisualManager : MonoBehaviour
+public class GameVisualManager : NetworkBehaviour
 {
     private const float GRID_SIZE = 3.1f;
 
@@ -16,10 +16,17 @@ public class GameVisualManager : MonoBehaviour
 
     private void GameManager_OnClickedOnGridPosition(object sender, GameManager.OnClickedOnGridPositionEventArgs e)
     {
-       // Transform spawnedCrossTransform = Instantiate(crossPrefab, GetGridWorldPosition(e.x, e.y), Quaternion.identity);
-       Transform spawnedCrossTransform = Instantiate(crossPrefab);
-       spawnedCrossTransform.GetComponent<NetworkObject>().Spawn(true);
-       spawnedCrossTransform.position = GetGridWorldPosition(e.x, e.y);
+        Debug.Log("GameManager_OnClickedOnGridPosition");
+        SpawnObjectRpc(e.x, e.y);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void SpawnObjectRpc(int x, int y) // we need to put the Rpc attribute to make this method can be called from client, and the name of function need to be Rpc
+    {
+        Debug.Log("SpawnObject");
+        Transform spawnedCrossTransform = Instantiate(crossPrefab);
+        spawnedCrossTransform.GetComponent<NetworkObject>().Spawn(true);
+        spawnedCrossTransform.position = GetGridWorldPosition(x, y);
     }
 
     private Vector2 GetGridWorldPosition(int x, int y)
