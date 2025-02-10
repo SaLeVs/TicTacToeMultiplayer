@@ -28,7 +28,7 @@ public class GameManager : NetworkBehaviour
 
     private PlayerType localPlayerType;
     private NetworkVariable<PlayerType> currentPlayablePlayerType = new NetworkVariable<PlayerType>();
-
+    private PlayerType[,] playerTypeArray; 
 
     private void Awake()
     {
@@ -37,6 +37,8 @@ public class GameManager : NetworkBehaviour
             Debug.Log("More than one GameManager instance");
         }
         Instance = this;
+
+        playerTypeArray = new PlayerType[3, 3];
     }
 
     public override void OnNetworkSpawn()
@@ -86,6 +88,12 @@ public class GameManager : NetworkBehaviour
         {
             return;
         }
+
+        if(playerTypeArray[x, y] != PlayerType.None) // here we are checking if the grid position is already occupied
+        {
+            return;
+        }
+        playerTypeArray[x, y] = playerType; // if the grid position is not occupied, we are assigning the player type to the grid position
 
         OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs
         {
