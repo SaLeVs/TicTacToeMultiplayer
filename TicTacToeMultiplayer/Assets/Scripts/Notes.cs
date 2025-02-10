@@ -14,4 +14,5 @@ public class Notes : MonoBehaviour
     // remote procedure calls = RPCS
     // A important thing about network, is that all data need to be syncronized between server and clients, and this is not automatically, so we need to do this manually
     // We syncronize the pos of cross using the network transform component
+    // Ever keep in mind wich function run on client and wich run on server
 }
