@@ -18,4 +18,5 @@ public class Notes : MonoBehaviour
     // We have to pay attetion if the function is on client and server, always, if one dont was, this can cause bugs
     // on tie, probably we have a error on final
     // if we can avoid syncronize data, can be good for performance and for avoid bugs
+    // We finish the firts step of project, and after will leraning about lobby
 }
