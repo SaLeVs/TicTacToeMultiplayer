@@ -172,7 +172,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   resultTextMesh: {fileID: 227809752}
   winColor: {r: 0.12356775, g: 0.9056604, b: 0.07262372, a: 1}
-  loseColor: {r: 0.8962264, g: 0.22905801, b: 0.04650232, a: 1}
+  loseColor: {r: 0.8490566, g: 0.121452324, b: 0.09211465, a: 1}
+  tieColor: {r: 0.9150943, g: 0.8085278, b: 0.012949424, a: 1}
   rematchButton: {fileID: 1787921737}
 --- !u!1 &227809750
 GameObject:
