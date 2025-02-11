@@ -31,6 +31,7 @@ public class GameManager : NetworkBehaviour
     public event EventHandler OnRematch;
     public event EventHandler OnGameTied;
     public event EventHandler OnScoreChanged;
+    public event EventHandler OnPlacedObject;
 
     public enum PlayerType
     {
@@ -197,6 +198,8 @@ public class GameManager : NetworkBehaviour
         }
         playerTypeArray[x, y] = playerType; // if the grid position is not occupied, we are assigning the player type to the grid position
 
+        TriggerOnPlacedObjectRpc();
+
         OnClickedOnGridPosition?.Invoke(this, new OnClickedOnGridPositionEventArgs
         {
             x = x,
@@ -216,6 +219,12 @@ public class GameManager : NetworkBehaviour
         }
 
         TestWinner();
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnPlacedObjectRpc()
+    {
+        OnPlacedObject?.Invoke(this, EventArgs.Empty);
     }
 
     private bool TestWinnerLine(Line line)
