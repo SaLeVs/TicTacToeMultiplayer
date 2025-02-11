@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
+using static GameManager;
 
 public class GameManager : NetworkBehaviour
 {
@@ -24,6 +25,7 @@ public class GameManager : NetworkBehaviour
     public class OnGameWinEventArgs : EventArgs
     {
         public Line line;
+        public PlayerType winPlayerType;
     }
 
     public enum PlayerType
@@ -52,6 +54,7 @@ public class GameManager : NetworkBehaviour
     private NetworkVariable<PlayerType> currentPlayablePlayerType = new NetworkVariable<PlayerType>();
     private PlayerType[,] playerTypeArray; 
     private List<Line> lineList;
+
 
     private void Awake()
     {
@@ -217,18 +220,27 @@ public class GameManager : NetworkBehaviour
 
     private void TestWinner()
     {
-        foreach (Line line in lineList) 
-        { 
-           if(TestWinnerLine(line))
+        for(int i = 0; i < lineList.Count; i++)
+        {
+            Line line = lineList[i];
+            if (TestWinnerLine(line))
             {
                 currentPlayablePlayerType.Value = PlayerType.None;
-                OnGameWin?.Invoke(this, new OnGameWinEventArgs
-                {
-                    line = line
-                });
+                TriggerOnGameWinRpc(i, playerTypeArray[line.centerGridPosition.x, line.centerGridPosition.y]);
                 break;
             }
         }
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void TriggerOnGameWinRpc(int lineIndex, PlayerType winPlayerType) 
+    {
+        Line line = lineList[lineIndex];
+        OnGameWin?.Invoke(this, new OnGameWinEventArgs
+        {
+            line = line,
+            winPlayerType = winPlayerType,
+        });
     }
 
     public PlayerType GetLocalPlayerType()
