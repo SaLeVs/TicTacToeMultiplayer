@@ -14,6 +14,8 @@ public class LobbyExplanation : MonoBehaviour
     private Lobby hostLobby;
     private float heartBeatTimer;
 
+    private string playerName;
+
     private async void Start() // function need to be aysnc beacause this function depends off internet, if we need await, things will freeze
     {
         await UnityServices.InitializeAsync(); // we need to add this line
@@ -24,9 +26,11 @@ public class LobbyExplanation : MonoBehaviour
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync(); // we have so much options for sign in, but we can make anonymous too
 
+        playerName = "S4LeV" + UnityEngine.Random.Range(10, 99);
+
         ListLobbies();
         CreateLobby();
-        
+
     }
 
     private void Update()
@@ -60,12 +64,20 @@ public class LobbyExplanation : MonoBehaviour
             CreateLobbyOptions createLobbyOptions = new CreateLobbyOptions
             {
                 IsPrivate = true,
-
+                Player = GetPlayer(),
+                Data = new Dictionary<string, DataObject>
+                {
+                    { "GameMode", new DataObject(DataObject.VisibilityOptions.Public, "1x1") }
+                    // { "GameMode", new DataObject(DataObject.VisibilityOptions.Public, "1x1", DataObject.IndexOptions.S1) }
+                    // this S1 is for using the index for control gamemodes
+                }
             };
 
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, createLobbyOptions);
 
             hostLobby = lobby;
+
+            PrintPlayer(hostLobby);
             Debug.Log("Created lobby! " + lobby.Name + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode);
         }
         catch (LobbyServiceException e)
@@ -83,10 +95,11 @@ public class LobbyExplanation : MonoBehaviour
                 Count = 25,
                 Filters = new List<QueryFilter>
                 {
-                    new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT)
+                    new QueryFilter(QueryFilter.FieldOptions.AvailableSlots, "0", QueryFilter.OpOptions.GT),
+                    new QueryFilter(QueryFilter.FieldOptions.S1, "1x1", QueryFilter.OpOptions.EQ)
                 },
-                Order = new List<QueryOrder> 
-                { 
+                Order = new List<QueryOrder>
+                {
                     new QueryOrder(false, QueryOrder.FieldOptions.Created)
                 }
             };
@@ -95,7 +108,7 @@ public class LobbyExplanation : MonoBehaviour
 
             foreach (Lobby lobby in queryResponse.Results)
             {
-                Debug.Log(lobby.Name + " " + lobby.MaxPlayers);
+                Debug.Log(lobby.Name + " " + lobby.MaxPlayers + " " + lobby.Data["GameMode"].Value);
             }
         }
         catch (LobbyServiceException e)
@@ -105,16 +118,55 @@ public class LobbyExplanation : MonoBehaviour
     }
 
     // if lobby dont recieve data in 30 seconds, it will be inactive
+    // if we forget to put the try and catch, the game will crash
 
     private async void JoinLobbyByCode(string lobbyCode)
     {
         try
         {
-            await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
+            JoinLobbyByCodeOptions joinLobbyByCodeOptions = new JoinLobbyByCodeOptions
+            {
+                Player = GetPlayer()
+            };
+            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, joinLobbyByCodeOptions);
+
+            PrintPlayer(joinedLobby);
         }
         catch (LobbyServiceException e)
         {
             Debug.Log(e);
+        }
+    }
+
+    private async void QuickJoinLobby()
+    {
+        try
+        {
+            await LobbyService.Instance.QuickJoinLobbyAsync();
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    private Player GetPlayer()
+    {
+        return new Player
+        {
+            Data = new Dictionary<string, PlayerDataObject>
+            {
+                { "PlayerName", new PlayerDataObject(PlayerDataObject.VisibilityOptions.Member, playerName) }
+            }
+        };
+    }
+
+    private void PrintPlayer(Lobby lobby)
+    {
+        Debug.Log("Players in lobby " + lobby.Name + " " + lobby.Data["GameMode"].Value);
+        foreach (Player player in lobby.Players)
+        {
+            Debug.Log(player.Id + " " + player.Data["PlayerName"].Value);
         }
     }
 }
