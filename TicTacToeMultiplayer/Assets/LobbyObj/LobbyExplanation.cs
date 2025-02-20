@@ -12,8 +12,9 @@ public class LobbyExplanation : MonoBehaviour
     // Second step is create a script like this and put on a gameobject
 
     private Lobby hostLobby;
+    private Lobby joinedLobby;
     private float heartBeatTimer;
-
+    private float lobbyUpdateTimer;
     private string playerName;
 
     private async void Start() // function need to be aysnc beacause this function depends off internet, if we need await, things will freeze
@@ -36,6 +37,7 @@ public class LobbyExplanation : MonoBehaviour
     private void Update()
     {
         HandleLobbyHeartBeat();
+        HandleLobbyPollForUpdates();
     }
 
     private async void HandleLobbyHeartBeat()
@@ -53,6 +55,21 @@ public class LobbyExplanation : MonoBehaviour
         }
     }
 
+    private async void HandleLobbyPollForUpdates()
+    {
+        if (joinedLobby != null)
+        {
+            lobbyUpdateTimer -= Time.deltaTime;
+            if (lobbyUpdateTimer <= 0) // we can change this value
+            {
+                float lobbyUpdateTimerMax = 1.1f;
+                lobbyUpdateTimer = lobbyUpdateTimerMax;
+
+                Lobby lobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id); // we need to send a ping to the server to keep the lobby alive
+                joinedLobby = lobby;
+            }
+        }
+    }
 
     private async void CreateLobby()
     {
@@ -76,8 +93,8 @@ public class LobbyExplanation : MonoBehaviour
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, createLobbyOptions);
 
             hostLobby = lobby;
-
-            PrintPlayer(hostLobby);
+            joinedLobby = hostLobby;
+            PrintPlayers(hostLobby);
             Debug.Log("Created lobby! " + lobby.Name + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode);
         }
         catch (LobbyServiceException e)
@@ -128,9 +145,10 @@ public class LobbyExplanation : MonoBehaviour
             {
                 Player = GetPlayer()
             };
-            Lobby joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, joinLobbyByCodeOptions);
+            Lobby lobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode, joinLobbyByCodeOptions);
 
-            PrintPlayer(joinedLobby);
+            joinedLobby = lobby;
+            PrintPlayers(joinedLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -161,12 +179,37 @@ public class LobbyExplanation : MonoBehaviour
         };
     }
 
-    private void PrintPlayer(Lobby lobby)
+    private void PrintPlayers()
+    {
+        PrintPlayers(joinedLobby);
+    }
+
+    private void PrintPlayers(Lobby lobby)
     {
         Debug.Log("Players in lobby " + lobby.Name + " " + lobby.Data["GameMode"].Value);
         foreach (Player player in lobby.Players)
         {
             Debug.Log(player.Id + " " + player.Data["PlayerName"].Value);
+        }
+    }
+
+    private async void UpdateLobbyGameMode(string gameMode)
+    {
+        try { 
+        hostLobby = await LobbyService.Instance.UpdateLobbyAsync(hostLobby.Id, new UpdateLobbyOptions
+        {
+
+            Data = new Dictionary<string, DataObject> {
+                { "GameMode", new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+            }
+        });
+
+            joinedLobby = hostLobby;
+            PrintPlayers(hostLobby);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
         }
     }
 }
