@@ -56,10 +56,17 @@ public class LobbyExplanation : MonoBehaviour
         {
             string lobbyName = "MyLobby";
             int maxPlayers = 2;
-            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
+
+            CreateLobbyOptions createLobbyOptions = new CreateLobbyOptions
+            {
+                IsPrivate = true,
+
+            };
+
+            Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, createLobbyOptions);
 
             hostLobby = lobby;
-            Debug.Log("Created lobby! " + lobby.Name + " " + lobby.MaxPlayers);
+            Debug.Log("Created lobby! " + lobby.Name + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode);
         }
         catch (LobbyServiceException e)
         {
@@ -98,4 +105,16 @@ public class LobbyExplanation : MonoBehaviour
     }
 
     // if lobby dont recieve data in 30 seconds, it will be inactive
+
+    private async void JoinLobbyByCode(string lobbyCode)
+    {
+        try
+        {
+            await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
 }
